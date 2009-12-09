@@ -110,7 +110,7 @@ tcp_open(const char *ip, int port) //ip, port
 	struct sockaddr_in remote;
 	int fd;
 
-	if ((fd=socket(AF_INET, SOCK_DGRAM, IPPROTO_TCP))==-1) return 0;
+	if (fd=socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) return 0;
 
 	memset((char *) &remote, 0, sizeof(remote));
 	remote.sin_family = AF_INET;
@@ -121,7 +121,13 @@ tcp_open(const char *ip, int port) //ip, port
 	if(fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) return 0;
 
 	// connect to the socket
-	if (connect(fd, (struct sockaddr*)&remote, sizeof(remote)) < 0) return 0;
+	if (connect(fd, (struct sockaddr*)&remote, sizeof(remote))<0)
+	{
+	    if (errno!=115) {
+	        printf("error while connecting: %s %d\n",strerror(errno),errno);
+	        return 0;
+        }
+	}
 
 	return fd;
 }
